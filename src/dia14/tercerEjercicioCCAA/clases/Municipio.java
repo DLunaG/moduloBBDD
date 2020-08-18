@@ -30,9 +30,9 @@ public class Municipio {
         codigo = codigoMunicipio;
 
         try {
-            Statement s = Main.conexion.createStatement();
+            Statement s = Main.bdd.conexion.createStatement();
             String sql = "SELECT * FROM municipio WHERE código = ? AND provincia = ?";
-            PreparedStatement ps = Main.conexion.prepareStatement(sql);
+            PreparedStatement ps = Main.bdd.conexion.prepareStatement(sql);
             ps.setString(1, this.codigo);
             ps.setString(2, this.provincia);
             ResultSet rs = ps.executeQuery();
@@ -77,10 +77,10 @@ public class Municipio {
 
     @Override
     public String toString() {
-        return  "provincia = '" + provincia + '\'' + "\n" +
-                "codigo = '" + codigo + '\'' + "\n" +
+        return  "Municipio: \ncódigo = '" + codigo + '\'' + "\n" +
                 "nombre = '" + nombre + '\'' + "\n" +
-                "poblacion = " + poblacion + "\n" +
+                "provincia = '" + provincia + '\'' + "\n" +
+                "población = " + poblacion + "\n" +
                 "superficie = " + superficie + "\n" +
                 "latitud = " + latitud + "\n" +
                 "longitud = " + longitud + "\n";

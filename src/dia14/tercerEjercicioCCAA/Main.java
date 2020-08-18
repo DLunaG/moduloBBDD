@@ -1,34 +1,15 @@
 package dia14.tercerEjercicioCCAA;
 
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import dia14.tercerEjercicioCCAA.clases.*;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
 
-    public static Connection conexion = null;
-
-    public static void conectarBD(){
-        try {
-            Class.forName("org.postgresql.Driver");
-            String url = "jdbc:postgresql://192.168.56.2/geografia";
-            String usuario = "censo";
-            String clave = "abc";
-            conexion = DriverManager.getConnection(url, usuario, clave);
-        }catch(ClassNotFoundException e) {
-            System.out.println("No se encuentra la clase " + e.toString());
-        }catch(SQLException e) {
-            System.out.println("Error SQL: " + e.toString());
-        }
-    }
+    public static BaseDeDatos bdd = new BaseDeDatos();
 
     public static void main(String[] args) {
 
-        conectarBD();
 
         //Establecer conexión con la base de datos geografia.
 
@@ -53,17 +34,50 @@ public class Main {
             Municipio m = municipios.get(i);
             System.out.println(m.getNombre());
         }*/
+        try {
+            bdd.conectarBD();
 
-        Provincia p = new Provincia("44");
-        int poblacionTotal = p.getPoblacion();
+            /*Provincia p = new Provincia("50");
+            if (p.getValido()) {
+                System.out.println(p.toString());
+            } else {
+                System.out.println("Código de Provincia no encontrado.");
+            }
 
-        System.out.println("Población total de la provincia de " + p.getNombre() + ": " +poblacionTotal);
 
-        Municipio m = new Municipio("50", "297");
-        if(m.getValido()) {
-            System.out.println(m.toString());
-        }else{
-            System.out.println("Código de municipio y/o provincia erróneo/s.");
+            Municipio m = new Municipio("50", "297");
+            if (m.getValido()) {
+                System.out.println(m.toString());
+            } else {
+                System.out.println("Código de municipio y/o provincia erróneo/s.");
+            } */
+
+            //CONEXIÓN CON LA CLASE BASEDEDATOS
+
+            Provincia p = new Provincia("50");
+            List<Municipio> municipiosProv = p.getMunicipios();
+            if (municipiosProv == null){
+                System.out.println("Código de Provincia inexistente.");
+            }else{
+                for (int i = 0; i < municipiosProv.size() ; i++) {
+                    System.out.println(municipiosProv.get(i));
+                }
+            }
+
+            Comunidad c = new Comunidad("02");
+            List<Municipio> municipiosCom = c.getMunicipios();
+            if(municipiosCom == null){
+                System.out.println("Código de comunidad autónoma inexistente.");
+            }else{
+                for (int i = 0; i < municipiosCom.size() ; i++) {
+                    System.out.println(municipiosCom.get(i));
+                }
+            }
+
+        }catch(SQLException e){
+            System.out.println("SQL Error: " + e.toString());
+        }catch(ClassNotFoundException e) {
+        System.out.println("No se encuentra la clase " + e.toString());
         }
     }
 

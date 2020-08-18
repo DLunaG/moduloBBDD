@@ -2,6 +2,7 @@ package dia14.tercerEjercicioCCAA.clases;
 
 import dia14.tercerEjercicioCCAA.Main;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,76 +13,58 @@ public class Provincia {
 
     private String codigo;
     private String nombre;
+    private String autonomia;
+
+    private boolean valido;
     private int poblacion;
 
 
-    public Provincia(String codigo){
+    public Provincia(String codigo) throws SQLException {
         this.codigo = codigo;
-        nombre = calcNombre();
         poblacion = calcPoblacion();
+
+        String sql = "SELECT * FROM provincia WHERE código = ?";
+        PreparedStatement ps = Main.bdd.conexion.prepareStatement(sql);
+        ps.setString(1, codigo);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            nombre = rs.getString("nombre");
+            autonomia = rs.getString("autonomía");
+            valido = true;
+        } else {
+            valido = false;
+        }
+
+
     }
 
-    public List<Municipio> getMunicipios(){
+    public int calcPoblacion() throws SQLException {
+        int resultado = -1;
 
-        List<Municipio> resultado = new ArrayList<Municipio>();
+        Statement s = Main.bdd.conexion.createStatement();
+        String consulta = "SELECT SUM(población) AS totalPoblacion FROM municipio where provincia = '" + this.codigo + "'";
+        ResultSet rs = s.executeQuery(consulta);
 
-        try {
-            Statement s = Main.conexion.createStatement();
-            String sql = "SELECT * FROM municipio WHERE provincia = '" + this.codigo + "'";
-            ResultSet rs = s.executeQuery(sql);
-            while(rs.next()){
-                Municipio m = new Municipio();
-                m.setNombre(rs.getString("nombre"));
-                resultado.add(m);
-            }
-        }catch(SQLException e ){
-            System.out.println("SQL error: " + e.toString());
-        }
+        rs.next();//para avanzar a la primera (y única) fila de resultados.
+        Municipio m = new Municipio();
+        m.setPoblacion(rs.getInt("totalPoblacion"));
+        resultado = m.getPoblacion();
+
+
         return resultado;
     }
 
-    public String calcNombre(){
-        String resultado = "";
-        try {
-            Statement s = Main.conexion.createStatement();
-            String sql = "SELECT nombre FROM provincia WHERE código = '" + this.codigo + "'";
-            ResultSet rs = s.executeQuery(sql);
-
-            if(rs.next()) {
-                resultado = rs.getString("nombre");
-            }else{
-                resultado = "código erroneo";
-            }
-
-        }catch(SQLException e ){
-            System.out.println("SQL error: " + e.toString());
-        }
-        return resultado;
-
-
+    public List<Municipio> getMunicipios() throws SQLException{
+        return Main.bdd.municipiosProvincia(this.codigo);
     }
 
-    public int calcPoblacion(){
-        int resultado =-1;
-
-        try {
-            Statement s = Main.conexion.createStatement();
-            String consulta = "SELECT SUM(población) AS totalPoblacion FROM municipio where provincia = '" + this.codigo + "'";
-            ResultSet rs = s.executeQuery(consulta);
-
-            rs.next();//para avanzar a la primera (y única) fila de resultados.
-            Municipio m = new Municipio();
-            m.setPoblacion(rs.getInt("totalPoblacion"));
-            resultado = m.getPoblacion();
-
-        }catch (SQLException e){
-            System.out.println("SQL Error: " + e.toString());
-
-        }
-        return resultado;
+    @Override
+    public String toString() {
+        return "Provincia: \ncódigo = '" + codigo + '\'' + "\n" +
+                "nombre = '" + nombre + '\'' + "\n" +
+                "autonomía = '" + autonomia + '\'' + "\n" +
+                "población = " + poblacion + "\n";
     }
-
-
 
     //getters
     public String getNombre() {
@@ -90,5 +73,9 @@ public class Provincia {
 
     public int getPoblacion() {
         return poblacion;
+    }
+
+    public boolean getValido() {
+        return valido;
     }
 }
